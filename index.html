@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypted Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        #chat-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        #chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 8px 12px;
+            background-color: #e3f2fd;
+            border-radius: 15px;
+            display: inline-block;
+            max-width: 80%;
+        }
+
+        #input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        #send-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #send-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <div id="input-container">
+            <input type="text" id="message-input" placeholder="Type your message...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function caesarCipher(str, shift) {
+            return str.replace(/[a-z]/gi, (char) => {
+                const code = char.charCodeAt(0);
+                let base = code >= 97 ? 97 : 65;
+                return String.fromCharCode(((code - base + shift) % 26 + 26) % 26 + base);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+
+            // Load messages from localStorage
+            let messages = JSON.parse(localStorage.getItem('encryptedMessages')) || [];
+
+            function renderMessages() {
+                chatMessages.innerHTML = '';
+                messages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message';
+                    messageDiv.textContent = message;
+                    chatMessages.appendChild(messageDiv);
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            renderMessages();
+
+            sendButton.addEventListener('click', () => {
+                const message = messageInput.value.trim();
+                if (message) {
+                    // Encrypt the message
+                    const encryptedMessage = caesarCipher(message, 3);
+                    
+                    // Save to localStorage and display
+                    messages.push(encryptedMessage);
+                    localStorage.setItem('encryptedMessages', JSON.stringify(messages));
+                    
+                    messageInput.value = '';
+                    renderMessages();
+                }
+            });
+
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendButton.click();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
